@@ -4,19 +4,13 @@ import json
 import webvtt
 import html
 import yt_dlp
-import google.generativeai as genai
+import requests
 from pathlib import Path
 from typing import Dict, Optional, Any
 
-# Configure Gemini API
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-if not GEMINI_API_KEY:
-    raise ValueError("GEMINI_API_KEY environment variable is required. Please set it with your API key from https://aistudio.google.com/app/api-keys")
-genai.configure(api_key=GEMINI_API_KEY)
-
 def query_gemini(content: str, model_name: str = "gemini-2.0-flash") -> str:
     """
-    Query Gemini LLM with the provided content.
+    Query Gemini LLM using REST API.
     
     Args:
         content: The text content to send to Gemini
@@ -25,12 +19,32 @@ def query_gemini(content: str, model_name: str = "gemini-2.0-flash") -> str:
     Returns:
         The response from Gemini
     """
-    model = genai.GenerativeModel(model_name)
+    api_key = os.getenv('GEMINI_API_KEY')
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY environment variable is required. Please set it with your API key from https://aistudio.google.com/app/api-keys")
     
-    response = model.generate_content(content)
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
     
-    if response.text:
-        return response.text
+    headers = {
+        'Content-Type': 'application/json',
+        'X-goog-api-key': api_key
+    }
+    
+    data = {
+        "contents": [{
+            "parts": [{
+                "text": content
+            }]
+        }]
+    }
+    
+    response = requests.post(url, headers=headers, json=data)
+    response.raise_for_status()
+    
+    result = response.json()
+    
+    if 'candidates' in result and len(result['candidates']) > 0:
+        return result['candidates'][0]['content']['parts'][0]['text']
     else:
         return "No response generated from Gemini"
 

@@ -90,4 +90,3 @@ For each processed video, files are saved in `cache/<video_id>/`:
 - yt-dlp
 - webvtt-py
 - requests
-- google-generativeai
