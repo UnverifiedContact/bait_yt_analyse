@@ -24,6 +24,15 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+3. Get a Gemini API key:
+   - Visit https://aistudio.google.com/app/api-keys
+   - Create a new API key
+   - Set it as an environment variable:
+   ```bash
+   export GEMINI_API_KEY="your_api_key_here"
+   ```
+   Or add it to your shell profile (`.bashrc`, `.zshrc`, etc.) for persistence.
+
 ## Usage
 
 ### CLI Usage
@@ -71,9 +80,14 @@ For each processed video, files are saved in `cache/<video_id>/`:
 - `1` - General error (bad URL, network failure, etc.)
 - `2` - No English subtitles available
 
+## Environment Variables
+
+- `GEMINI_API_KEY` - Required. Your Gemini API key from https://aistudio.google.com/app/api-keys
+
 ## Requirements
 
 - Python 3.7+
 - yt-dlp
 - webvtt-py
 - requests
+- google-generativeai

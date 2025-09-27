@@ -4,8 +4,35 @@ import json
 import webvtt
 import html
 import yt_dlp
+import google.generativeai as genai
 from pathlib import Path
 from typing import Dict, Optional, Any
+
+# Configure Gemini API
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY environment variable is required. Please set it with your API key from https://aistudio.google.com/app/api-keys")
+genai.configure(api_key=GEMINI_API_KEY)
+
+def query_gemini(content: str, model_name: str = "gemini-2.0-flash") -> str:
+    """
+    Query Gemini LLM with the provided content.
+    
+    Args:
+        content: The text content to send to Gemini
+        model_name: The Gemini model to use (default: gemini-2.0-flash)
+    
+    Returns:
+        The response from Gemini
+    """
+    model = genai.GenerativeModel(model_name)
+    
+    response = model.generate_content(content)
+    
+    if response.text:
+        return response.text
+    else:
+        return "No response generated from Gemini"
 
 
 def extract_video_id(url: str) -> str:
@@ -160,7 +187,7 @@ def generate_final_txt(metadata: Dict[str, Any], flattened_subtitles: str,
     return '\n'.join(lines)
 
 
-def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False) -> Dict[str, Any]:
+def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False, query_gemini_llm: bool = True) -> Dict[str, Any]:
     """
     Process a YouTube video URL and generate consolidated files.
     
@@ -168,9 +195,10 @@ def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False)
         url: YouTube video URL
         prompt: Optional prompt to override default
         force: Whether to force re-download of cached data
+        query_gemini_llm: Whether to query Gemini LLM with the final content
     
     Returns:
-        Dictionary with status and file paths
+        Dictionary with status, file paths, and Gemini response
     """
     try:
         # Extract video ID
@@ -232,6 +260,17 @@ def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False)
         )
         save_text_file(final_content, cache_dir / "final.txt")
         
+        # Query Gemini LLM if requested
+        gemini_response = ""
+        if query_gemini_llm:
+            try:
+                gemini_response = query_gemini(final_content)
+                # Save Gemini response to a separate file
+                save_text_file(gemini_response, cache_dir / "gemini_response.txt")
+            except Exception as e:
+                gemini_response = f"Error querying Gemini: {str(e)}"
+                save_text_file(gemini_response, cache_dir / "gemini_response.txt")
+        
         # Return result
         files = {
             "title": str(cache_dir / "title.txt"),
@@ -242,18 +281,26 @@ def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False)
             "prompt": str(cache_dir / "prompt.txt")
         }
         
+        if query_gemini_llm:
+            files["gemini_response"] = str(cache_dir / "gemini_response.txt")
+        
         if metadata.get('uploader'):
             files["uploader"] = str(cache_dir / "uploader.txt")
         
         if metadata.get('channel'):
             files["channel"] = str(cache_dir / "channel.txt")
         
-        return {
+        result = {
             "status": "success",
             "video_id": video_id,
             "cache_dir": str(cache_dir),
             "files": files
         }
+        
+        if query_gemini_llm:
+            result["gemini_response"] = gemini_response
+        
+        return result
         
     except ValueError as e:
         return {
