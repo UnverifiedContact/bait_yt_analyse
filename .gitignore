@@ -54,6 +54,9 @@ Thumbs.db
 *.ass
 *.ssa
 
+# Environment variables
+.env
+
 # Temporary files
 *.tmp
 *.temp
