@@ -1,0 +1,1 @@
+The following are the extracted subtitles of a YouTube video. Your task is to analyse them and reply only with up to 3 concise, non-clickbait titles based on the title based on the context of the given content. Keep the output simple, if it is only possible or reasonable for one title to be the solution then just provide the one.

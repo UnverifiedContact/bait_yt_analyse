@@ -1,1 +1,10 @@
-The following are the extracted subtitles of a YouTube video. Your task is to analyse them and reply only with 3 concise, non-clickbait titles based on the title based on the context of the given content.
+You are given the transcript, description, uploader, and channel of a YouTube video.
+
+Your task is to produce **one single, highly accurate title** that clearly reflects the true content of the video. Accuracy is the top priority. Use the transcript and other provided context to reason carefully about the content.
+
+Consider all the context carefully before deciding on the title. The first title should be the best possible representation of the video.
+
+Avoid generating multiple titles. Secondary titles are unnecessary and will not be used, so only create additional titles if the first one is genuinely insufficient to describe the video accurately.
+
+The title must be a single sentence, clear, concise, and non-clickbait.
+
