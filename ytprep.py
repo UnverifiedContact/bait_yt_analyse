@@ -243,6 +243,15 @@ def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False,
         flattened_subtitles = flatten_subtitles(str(subtitle_file))
         save_text_file(flattened_subtitles, cache_dir / "subtitles_flat.txt")
         
+        # If force is True, remove existing final.txt and gemini_response.txt to ensure they get regenerated
+        if force:
+            final_file = cache_dir / "final.txt"
+            if final_file.exists():
+                final_file.unlink()
+            gemini_response_file = cache_dir / "gemini_response.txt"
+            if gemini_response_file.exists():
+                gemini_response_file.unlink()
+        
         # Load or copy prompt
         if prompt is None:
             prompt_file = Path("prompt.txt")
