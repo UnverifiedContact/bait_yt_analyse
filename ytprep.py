@@ -218,8 +218,9 @@ def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False,
         # Extract video ID
         video_id = extract_video_id(url)
         
-        # Set up cache directory
-        cache_dir = Path("cache") / video_id
+        # Set up cache directory - always relative to this script's location
+        script_dir = Path(__file__).parent
+        cache_dir = script_dir / "cache" / video_id
         
         # If force is True, delete entire cache directory to ensure complete regeneration
         if force and cache_dir.exists():
@@ -249,7 +250,7 @@ def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False,
         
         # Load or copy prompt
         if prompt is None:
-            prompt_file = Path("prompt.txt")
+            prompt_file = script_dir / "prompt.txt"
             if prompt_file.exists():
                 with open(prompt_file, 'r', encoding='utf-8') as f:
                     prompt_content = f.read()
