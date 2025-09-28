@@ -1,4 +1,4 @@
-# YouTube Preprocessing Tool
+# YouTube Alterantive Title Processor
 
 A Python tool for downloading YouTube video metadata and subtitles, then generating consolidated files ready for LLM processing to create non-clickbait titles.
 

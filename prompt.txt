@@ -7,4 +7,3 @@ Consider all the context carefully before deciding on the title. The first title
 Avoid generating multiple titles. Secondary titles are unnecessary and will not be used, so only create additional titles if the first one is genuinely insufficient to describe the video accurately.
 
 The title must be a single sentence, clear, concise, and non-clickbait.
-
