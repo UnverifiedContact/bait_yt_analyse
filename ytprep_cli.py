@@ -76,9 +76,6 @@ Examples:
                     print()
                     print("=" * 80)
             else:
-                # Default behavior: show debug info and Gemini response
-                final_path = os.path.abspath(result['files']['final'])
-                print(f"Debug: Using final.txt at: {final_path}")
                 if 'gemini_response' in result and result['gemini_response']:
                     print(result['gemini_response'].rstrip())
                 else:
