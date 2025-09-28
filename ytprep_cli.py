@@ -6,6 +6,7 @@ Usage: python ytprep_cli.py <youtube_url> [--force] [--verbose]
 """
 
 import sys
+import os
 import argparse
 from ytprep import process_youtube
 
@@ -76,7 +77,8 @@ Examples:
                     print("=" * 80)
             else:
                 # Default behavior: show debug info and Gemini response
-                print(f"Debug: Using final.txt at: {result['files']['final']}")
+                final_path = os.path.abspath(result['files']['final'])
+                print(f"Debug: Using final.txt at: {final_path}")
                 if 'gemini_response' in result and result['gemini_response']:
                     print(result['gemini_response'].rstrip())
                 else:
