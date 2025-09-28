@@ -75,7 +75,8 @@ Examples:
                     print()
                     print("=" * 80)
             else:
-                # Default behavior: only show Gemini response
+                # Default behavior: show debug info and Gemini response
+                print(f"Debug: Using final.txt at: {result['files']['final']}")
                 if 'gemini_response' in result and result['gemini_response']:
                     print(result['gemini_response'].rstrip())
                 else:

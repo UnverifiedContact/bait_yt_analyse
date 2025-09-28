@@ -220,6 +220,12 @@ def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False,
         
         # Set up cache directory
         cache_dir = Path("cache") / video_id
+        
+        # If force is True, delete entire cache directory to ensure complete regeneration
+        if force and cache_dir.exists():
+            import shutil
+            shutil.rmtree(cache_dir)
+        
         cache_dir.mkdir(parents=True, exist_ok=True)
         
         # Load or download metadata
@@ -234,23 +240,12 @@ def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False,
                 "files": {}
             }
         
-        # Download subtitles if not cached or force is True
-        subtitle_file = cache_dir / "subtitles_raw.vtt"
-        if force or not subtitle_file.exists():
-            subtitle_file = download_subtitles(metadata['subtitles'], cache_dir)
+        # Download subtitles (always download since cache is cleared if force=True)
+        subtitle_file = download_subtitles(metadata['subtitles'], cache_dir)
         
         # Flatten subtitles
         flattened_subtitles = flatten_subtitles(str(subtitle_file))
         save_text_file(flattened_subtitles, cache_dir / "subtitles_flat.txt")
-        
-        # If force is True, remove existing final.txt and gemini_response.txt to ensure they get regenerated
-        if force:
-            final_file = cache_dir / "final.txt"
-            if final_file.exists():
-                final_file.unlink()
-            gemini_response_file = cache_dir / "gemini_response.txt"
-            if gemini_response_file.exists():
-                gemini_response_file.unlink()
         
         # Load or copy prompt
         if prompt is None:
