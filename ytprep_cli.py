@@ -77,7 +77,7 @@ Examples:
             else:
                 # Default behavior: only show Gemini response
                 if 'gemini_response' in result and result['gemini_response']:
-                    print(result['gemini_response'])
+                    print(result['gemini_response'].rstrip())
                 else:
                     print("No Gemini response available. Use --verbose to see full output.")
             
