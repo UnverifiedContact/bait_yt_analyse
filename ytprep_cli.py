@@ -20,6 +20,7 @@ Examples:
   python ytprep_cli.py "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   python ytprep_cli.py "https://youtu.be/dQw4w9WgXcQ" --force
   python ytprep_cli.py "https://youtu.be/dQw4w9WgXcQ" --verbose
+  python ytprep_cli.py "https://youtu.be/dQw4w9WgXcQ" --cache-dir /tmp/youtube_cache
         """
     )
     
@@ -46,10 +47,16 @@ Examples:
         help='Show detailed output including original content'
     )
     
+    parser.add_argument(
+        '--cache-dir',
+        type=str,
+        help='Cache directory for storing downloaded data (defaults to TMP env var or ./cache)'
+    )
+    
     args = parser.parse_args()
     
     # Process the video
-    result = process_youtube(args.url, force=args.force, query_gemini_llm=not args.no_gemini)
+    result = process_youtube(args.url, force=args.force, query_gemini_llm=not args.no_gemini, cache_dir=args.cache_dir)
     
     if result['status'] == 'success':
         try:

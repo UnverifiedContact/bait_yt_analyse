@@ -64,9 +64,13 @@ def extract_video_id(url: str) -> str:
     raise ValueError(f"Could not extract video ID from URL: {url}")
 
 
-def download_metadata_and_subtitles(video_id: str, force: bool = False) -> Dict[str, Any]:
+def download_metadata_and_subtitles(video_id: str, force: bool = False, cache_dir: Optional[Path] = None) -> Dict[str, Any]:
     """Download video metadata and subtitles using yt-dlp."""
-    cache_dir = Path("cache") / video_id
+    if cache_dir is None:
+        cache_dir = Path("cache") / video_id
+    else:
+        cache_dir = cache_dir / video_id
+    
     cache_dir.mkdir(parents=True, exist_ok=True)
     
     # Check if we already have cached data (unless force is True)
@@ -201,7 +205,7 @@ def generate_final_txt(metadata: Dict[str, Any], flattened_subtitles: str,
     return '\n'.join(lines)
 
 
-def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False, query_gemini_llm: bool = True) -> Dict[str, Any]:
+def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False, query_gemini_llm: bool = True, cache_dir: Optional[str] = None) -> Dict[str, Any]:
     """
     Process a YouTube video URL and generate consolidated files.
     
@@ -210,6 +214,7 @@ def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False,
         prompt: Optional prompt to override default
         force: Whether to force re-download of cached data
         query_gemini_llm: Whether to query Gemini LLM with the final content
+        cache_dir: Optional cache directory path. Defaults to TMP env var or script directory/cache
     
     Returns:
         Dictionary with status, file paths, and Gemini response
@@ -218,9 +223,14 @@ def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False,
         # Extract video ID
         video_id = extract_video_id(url)
         
-        # Set up cache directory - always relative to this script's location
-        script_dir = Path(__file__).parent
-        cache_dir = script_dir / "cache" / video_id
+        # Set up cache directory
+        if cache_dir is None:
+            # Default to TMP environment variable, fallback to script directory/cache
+            base_cache_dir = os.getenv('TMP', str(Path(__file__).parent / "cache"))
+        else:
+            base_cache_dir = cache_dir
+        
+        cache_dir = Path(base_cache_dir) / video_id
         
         # If force is True, delete entire cache directory to ensure complete regeneration
         if force and cache_dir.exists():
@@ -230,7 +240,7 @@ def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False,
         cache_dir.mkdir(parents=True, exist_ok=True)
         
         # Load or download metadata
-        metadata = download_metadata_and_subtitles(video_id, force)
+        metadata = download_metadata_and_subtitles(video_id, force, Path(base_cache_dir))
         
         # Check if subtitles are available
         if not metadata.get('subtitles'):
@@ -250,6 +260,7 @@ def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False,
         
         # Load or copy prompt
         if prompt is None:
+            script_dir = Path(__file__).parent
             prompt_file = script_dir / "prompt.txt"
             if prompt_file.exists():
                 with open(prompt_file, 'r', encoding='utf-8') as f:
