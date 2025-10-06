@@ -7,6 +7,7 @@ import yt_dlp
 import requests
 from pathlib import Path
 from typing import Dict, Optional, Any
+from urllib.parse import urlparse, parse_qs
 
 def query_gemini(content: str, model_name: str = "gemini-2.0-flash") -> str:
     """
@@ -49,24 +50,23 @@ def query_gemini(content: str, model_name: str = "gemini-2.0-flash") -> str:
         return "No response generated from Gemini"
 
 
-def extract_video_id(url_or_id: str) -> str:
+def extract_youtube_id(value: str) -> str | None:
     """Extract YouTube video ID from URL or return the ID if already provided."""
-    # Check if it's already a valid YouTube video ID (11 characters, alphanumeric + _ and -)
-    if re.match(r'^[a-zA-Z0-9_-]{11}$', url_or_id):
-        return url_or_id
-    
-    # Try to extract video ID from various URL formats
-    patterns = [
-        r'(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([a-zA-Z0-9_-]{11})',
-        r'youtube\.com/v/([a-zA-Z0-9_-]{11})',
-    ]
-    
-    for pattern in patterns:
-        match = re.search(pattern, url_or_id)
-        if match:
-            return match.group(1)
-    
-    raise ValueError(f"Could not extract video ID from URL or ID: {url_or_id}")
+    if not value:
+        return None
+    value = value.strip()
+    if re.fullmatch(r"[A-Za-z0-9_-]{11}", value):
+        return value
+    parsed = urlparse(value)
+    if parsed.hostname in ("www.youtube.com", "youtube.com"):
+        if parsed.path == "/watch":
+            return parse_qs(parsed.query).get("v", [None])[0]
+        m = re.match(r"^/(embed|shorts)/([^/?#&]+)", parsed.path)
+        if m:
+            return m.group(2)
+    if parsed.hostname == "youtu.be":
+        return parsed.path.lstrip("/")
+    return None
 
 
 def download_metadata_and_subtitles(video_id: str, force: bool = False, cache_dir: Optional[Path] = None) -> Dict[str, Any]:
@@ -226,7 +226,9 @@ def process_youtube(url: str, prompt: Optional[str] = None, force: bool = False,
     """
     try:
         # Extract video ID
-        video_id = extract_video_id(url)
+        video_id = extract_youtube_id(url)
+        if video_id is None:
+            raise ValueError(f"Could not extract video ID from URL or ID: {url}")
         
         # Set up cache directory
         if cache_dir is None:
