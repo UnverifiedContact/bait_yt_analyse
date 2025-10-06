@@ -49,19 +49,24 @@ def query_gemini(content: str, model_name: str = "gemini-2.0-flash") -> str:
         return "No response generated from Gemini"
 
 
-def extract_video_id(url: str) -> str:
-    """Extract YouTube video ID from various URL formats."""
+def extract_video_id(url_or_id: str) -> str:
+    """Extract YouTube video ID from URL or return the ID if already provided."""
+    # Check if it's already a valid YouTube video ID (11 characters, alphanumeric + _ and -)
+    if re.match(r'^[a-zA-Z0-9_-]{11}$', url_or_id):
+        return url_or_id
+    
+    # Try to extract video ID from various URL formats
     patterns = [
         r'(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([a-zA-Z0-9_-]{11})',
         r'youtube\.com/v/([a-zA-Z0-9_-]{11})',
     ]
     
     for pattern in patterns:
-        match = re.search(pattern, url)
+        match = re.search(pattern, url_or_id)
         if match:
             return match.group(1)
     
-    raise ValueError(f"Could not extract video ID from URL: {url}")
+    raise ValueError(f"Could not extract video ID from URL or ID: {url_or_id}")
 
 
 def download_metadata_and_subtitles(video_id: str, force: bool = False, cache_dir: Optional[Path] = None) -> Dict[str, Any]:

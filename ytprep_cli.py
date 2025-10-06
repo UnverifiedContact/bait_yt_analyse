@@ -18,15 +18,15 @@ def main():
         epilog="""
 Examples:
   python ytprep_cli.py "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-  python ytprep_cli.py "https://youtu.be/dQw4w9WgXcQ" --force
+  python ytprep_cli.py "dQw4w9WgXcQ" --force
   python ytprep_cli.py "https://youtu.be/dQw4w9WgXcQ" --verbose
-  python ytprep_cli.py "https://youtu.be/dQw4w9WgXcQ" --cache-dir /tmp/youtube_cache
+  python ytprep_cli.py "dQw4w9WgXcQ" --cache-dir /tmp/youtube_cache
         """
     )
     
     parser.add_argument(
         'url',
-        help='YouTube video URL to process'
+        help='YouTube video URL or video ID to process'
     )
     
     parser.add_argument(
